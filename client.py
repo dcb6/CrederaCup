@@ -50,13 +50,18 @@ def on_open(ws):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print "Usage: " + sys.argv[0] + " <server> <token>"
-        sys.exit(1)
+    # if len(sys.argv) != 3:
+    #     print "Usage: " + sys.argv[0] + " <server> <token>"
+    #     sys.exit(1)
 
-    print "Attempting websocket connection to {}".format(sys.argv[1])
-    ws = websocket.WebSocketApp(sys.argv[1],
-                                header = ["X-Credera-Auth-Token: " + sys.argv[2]],
+    print "Attempting websocket connection to {}".format("wss://play.crederacup.com/season/I/practice")
+
+    # print sys.argv[0]
+    # print sys.argv[1]
+    # print sys.argv[2]
+
+    ws = websocket.WebSocketApp("wss://play.crederacup.com/season/I/practice",
+                                header = ["X-Credera-Auth-Token: " + "5c8a27d7-513d-4801-a1bb-b8b4b87a6e43"],
                                 on_message = on_message,
                                 on_error = on_error,
                                 on_close = on_close)
