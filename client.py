@@ -19,16 +19,31 @@ def get_status(code):
 
 def on_message(ws, msg):
     data = json.loads(msg)
+    print data
     if "lapResult" in data:
         result = data["lapResult"]
         lap_number = result["lapNumber"]
         fuel = result["fuel"]
         made_pit_stop = result["madePitStop"]
+        tire = result["tire"]
 
-        # Determine whether or not to make a pit stop
-        make_pit_stop = False
+        ## Determine whether or not to make a pit stop
+        need_fuel = fuel < 2
+        need_tire = tire < 5
+        make_pit_stop = need_fuel or need_tire
+        if make_pit_stop:
+            pit_params = { "instruction": "pit",
+                           "spoilerAngle": 5.0,
+                           "camberAngle": 2.5,
+                           "airIntakeDiameter": 6.0}
+            if need_fuel:
+                pit_params["fuel"] = "A"
+            if need_tire < 5:
+                pit_params["tire"] = "A"
+            response = json.dumps(pit_params)
+        else:
+            response = json.dumps({"instruction":"continue"})
 
-        response = json.dumps({ "instruction": "pit" if make_pit_stop else "continue" })
         ws.send(response)
     elif "raceResult" in data:
         print "Race complete!"
@@ -50,15 +65,19 @@ def on_open(ws):
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 3:
-    #     print "Usage: " + sys.argv[0] + " <server> <token>"
-    #     sys.exit(1)
+    url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
+                   "austrian":"wss://play.crederacup.com/season/I/race/AUSTRIANGRANDPRIX",
+                   "brazilian":"wss://play.crederacup.com/season/I/race/BRAZILIANGRANDPRIX",
+                   "german":"wss://play.crederacup.com/season/I/race/GERMANGRANDPRIX",
+                   "italian":"wss://play.crederacup.com/season/I/race/ITALIANGRANDPRIX",
+                   "monaco":"wss://play.crederacup.com/season/I/race/MONACOGRANDPRIX"
+                    }
 
-    print "Attempting websocket connection to {}".format("wss://play.crederacup.com/season/I/practice")
+    # EDIT TO CHOOSE RACE
+    choose_race = "practice"
+    url = url_options[choose_race]
 
-    # print sys.argv[0]
-    # print sys.argv[1]
-    # print sys.argv[2]
+    print "Attempting websocket connection to {}".format(url)
 
     ws = websocket.WebSocketApp("wss://play.crederacup.com/season/I/practice",
                                 header = ["X-Credera-Auth-Token: " + "5c8a27d7-513d-4801-a1bb-b8b4b87a6e43"],
