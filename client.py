@@ -3,7 +3,7 @@ from __future__ import division
 import websocket
 import sys
 import json
-
+import cchelper
 
 def get_status(code):
     if code == 1000:
@@ -39,9 +39,10 @@ def on_message(ws, msg):
         vehicle_params["tire"] = "A" # A,B,C
         vehicle_params["spoilerAngle"] = 5.0 # [0.0, 10.0], default=5.0
         vehicle_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
-        vehicle_params["airIntakeDiameter"] = 6.0 # airIntakeDiameter [4.0, 8.0], default=6.0
+        vehicle_params["airIntakeDiameter"] = 6.0 # [4.0, 8.0], default=6.0
+
         print vehicle_params
-        # response = json.dumps(vehicle_params)
+        response = json.dumps(vehicle_params)
         # ws.send(response)
 
     ## EACH LAP
@@ -86,10 +87,22 @@ def on_close(ws):
 
 def on_open(ws):
     print "Connection established."
+    global race
+    if race == "practice":
+        # set weather
+        weather = {"instruction": "setWeather"}
+        weather["temp"] = 80 # [70, 80]
+        weather["isRaining"] = False # True or False
+        response = json.dumps(weather)
+        ws.send(response)
+
     # get weather
     response = json.dumps({"instruction": "getWeather"})
     ws.send(response)
-    # get track pit_params
+    # get vehicle parameters
+    response = json.dumps({"instruction": "getVehicleParams"})
+    ws.send(response)
+    # get track parameters
     response = json.dumps({"instruction": "getTrackParams"})
     ws.send(response)
     # start race
@@ -107,8 +120,8 @@ if __name__ == "__main__":
                     }
 
     # EDIT TO CHOOSE RACE
-    choose_race = "practice"
-    url = url_options[choose_race]
+    race = "practice"
+    url = url_options[race]
 
     print "Attempting websocket connection to {}".format(url)
 
