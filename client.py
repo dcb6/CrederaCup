@@ -49,9 +49,14 @@ def on_message(ws, msg):
     elif "lapResult" in data:
         result = data["lapResult"]
         lap_number = result["lapNumber"]
+        lap_time = result["lapTime"]
         fuel = result["fuel"]
         made_pit_stop = result["madePitStop"]
         tire = result["tire"]
+
+        ## Data collection
+        global graph
+        graph[lap_number] = fuel
 
         ## Determine whether or not to make a pit stop
         need_fuel = fuel < 2
@@ -110,25 +115,43 @@ def on_open(ws):
     ws.send(response)
 
 
-if __name__ == "__main__":
-    url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
-                   "austrian":"wss://play.crederacup.com/season/I/race/AUSTRIANGRANDPRIX",
-                   "brazilian":"wss://play.crederacup.com/season/I/race/BRAZILIANGRANDPRIX",
-                   "german":"wss://play.crederacup.com/season/I/race/GERMANGRANDPRIX",
-                   "italian":"wss://play.crederacup.com/season/I/race/ITALIANGRANDPRIX",
-                   "monaco":"wss://play.crederacup.com/season/I/race/MONACOGRANDPRIX"
-                    }
+# if __name__ == "__main__":
+url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
+               "austrian":"wss://play.crederacup.com/season/I/race/AUSTRIANGRANDPRIX",
+               "brazilian":"wss://play.crederacup.com/season/I/race/BRAZILIANGRANDPRIX",
+               "german":"wss://play.crederacup.com/season/I/race/GERMANGRANDPRIX",
+               "italian":"wss://play.crederacup.com/season/I/race/ITALIANGRANDPRIX",
+               "monaco":"wss://play.crederacup.com/season/I/race/MONACOGRANDPRIX"
+                }
 
-    # EDIT TO CHOOSE RACE
-    race = "practice"
-    url = url_options[race]
+# EDIT TO CHOOSE RACE
+race = "practice"
+url = url_options[race]
 
-    print "Attempting websocket connection to {}".format(url)
+print "Attempting websocket connection to {}".format(url)
 
-    ws = websocket.WebSocketApp("wss://play.crederacup.com/season/I/practice",
-                                header = ["X-Credera-Auth-Token: " + "5c8a27d7-513d-4801-a1bb-b8b4b87a6e43"],
-                                on_message = on_message,
-                                on_error = on_error,
-                                on_close = on_close)
-    ws.on_open = on_open
-    ws.run_forever()
+ws = websocket.WebSocketApp(url,
+                            header = ["X-Credera-Auth-Token: " + "5c8a27d7-513d-4801-a1bb-b8b4b87a6e43"],
+                            on_message = on_message,
+                            on_error = on_error,
+                            on_close = on_close)
+
+graph = {}
+ws.on_open = on_open
+ws.run_forever()
+
+cchelper.plot_lines([graph], 'fuel decrease', 'lap number', 'fuel')
+cchelper.show()
+
+# loop attempt
+# for i in range(1, 3, 1):
+#     print "Attempting websocket connection to {}".format(url)
+#
+#     ws = websocket.WebSocketApp("wss://play.crederacup.com/season/I/practice",
+#                                 header = ["X-Credera-Auth-Token: " + "5c8a27d7-513d-4801-a1bb-b8b4b87a6e43"],
+#                                 on_message = on_message,
+#                                 on_error = on_error,
+#                                 on_close = on_close)
+#
+#     ws.on_open = on_open
+#     ws.run_forever()
