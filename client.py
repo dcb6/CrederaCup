@@ -20,7 +20,32 @@ def get_status(code):
 def on_message(ws, msg):
     data = json.loads(msg)
     print data
-    if "lapResult" in data:
+
+    ## FIRST RUN
+    # initial weather
+    if "weather" in data:
+        result = data["weather"]
+        temp = result["temp"]
+        is_raining = result["isRaining"]
+    # initial track parameters
+    elif "trackParams" in data:
+        results = data["trackParams"]
+        num_turns = results["numTurns"]
+        num_laps = results["numLaps"]
+
+        # set vehicle parameters
+        vehicle_params = {"instruction": "setVehicleParams"}
+        vehicle_params["fuel"] = "A" # A,B,C,D
+        vehicle_params["tire"] = "A" # A,B,C
+        vehicle_params["spoilerAngle"] = 5.0 # [0.0, 10.0], default=5.0
+        vehicle_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
+        vehicle_params["airIntakeDiameter"] = 6.0 # airIntakeDiameter [4.0, 8.0], default=6.0
+        print vehicle_params
+        # response = json.dumps(vehicle_params)
+        # ws.send(response)
+
+    ## EACH LAP
+    elif "lapResult" in data:
         result = data["lapResult"]
         lap_number = result["lapNumber"]
         fuel = result["fuel"]
@@ -32,14 +57,15 @@ def on_message(ws, msg):
         need_tire = tire < 5
         make_pit_stop = need_fuel or need_tire
         if make_pit_stop:
-            pit_params = { "instruction": "pit",
-                           "spoilerAngle": 5.0,
-                           "camberAngle": 2.5,
-                           "airIntakeDiameter": 6.0}
+            pit_params = { "instruction": "pit"}
+            pit_params["spoilerAngle"] = 5.0 # [0.0, 10.0], default=5.0
+            pit_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
+            pit_params["airIntakeDiameter"] = 6.0 # # airIntakeDiameter [4.0, 8.0], default=6.0
+
             if need_fuel:
-                pit_params["fuel"] = "A"
+                pit_params["fuel"] = "A" # A,B,C,D
             if need_tire < 5:
-                pit_params["tire"] = "A"
+                pit_params["tire"] = "A" # A,B,C
             response = json.dumps(pit_params)
         else:
             response = json.dumps({"instruction":"continue"})
@@ -60,6 +86,13 @@ def on_close(ws):
 
 def on_open(ws):
     print "Connection established."
+    # get weather
+    response = json.dumps({"instruction": "getWeather"})
+    ws.send(response)
+    # get track pit_params
+    response = json.dumps({"instruction": "getTrackParams"})
+    ws.send(response)
+    # start race
     response = json.dumps({ "instruction": "beginRace" })
     ws.send(response)
 
