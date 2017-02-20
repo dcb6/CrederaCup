@@ -1,6 +1,5 @@
 """
-This module provides a number of useful functions for COMP 182, including
-manipulating graphs, plotting data, and timing functions.
+Helper functions for crederacup
 """
 
 import matplotlib.pyplot as plt
@@ -42,17 +41,17 @@ def write_graph(g, filename):
     with open(filename, 'w') as f:
         f.write(repr(g))
 
-def copy_graph(g):
-    """
-    Return a copy of the input graph, g
-
-    Arguments:
-    g -- a graph
-
-    Returns:
-    A copy of the input graph that does not share any objects.
-    """
-    return copy.deepcopy(g)
+# def copy_graph(g):
+#     """
+#     Return a copy of the input graph, g
+#
+#     Arguments:
+#     g -- a graph
+#
+#     Returns:
+#     A copy of the input graph that does not share any objects.
+#     """
+#     return copy.deepcopy(g)
 
 ## Timing functions
 
@@ -141,7 +140,6 @@ def plot_dist_loglog(data, title, xlabel, ylabel, filename=None):
     """
     _plot_dist(data, title, xlabel, ylabel, True, filename)
 
-
 def _pow_10_round(n, up=True):
     """
     Round n to the nearest power of 10.
@@ -157,7 +155,6 @@ def _pow_10_round(n, up=True):
         return 10 ** math.ceil(math.log(n, 10))
     else:
         return 10 ** math.floor(math.log(n, 10))
-
 
 def _plot_dist(data, title, xlabel, ylabel, scatter, filename=None):
     """

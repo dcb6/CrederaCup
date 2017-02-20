@@ -21,6 +21,10 @@ def on_message(ws, msg):
     data = json.loads(msg)
     print data
 
+    # initialize global variables
+    global graph
+    global has_changed_tire
+
     ## FIRST RUN
     # initial weather
     if "weather" in data:
@@ -55,8 +59,7 @@ def on_message(ws, msg):
         tire = result["tire"]
 
         ## Data collection
-        global graph
-        graph[lap_number] = fuel
+        graph[tire] = lap_time
 
         ## Determine whether or not to make a pit stop
         need_fuel = fuel < 2
@@ -67,11 +70,14 @@ def on_message(ws, msg):
             pit_params["spoilerAngle"] = 5.0 # [0.0, 10.0], default=5.0
             pit_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
             pit_params["airIntakeDiameter"] = 6.0 # # airIntakeDiameter [4.0, 8.0], default=6.0
+            pit_params["fuel"] = "D" # A,B,C,D
+            pit_params["tire"] = "A" # A,B,C
 
-            if need_fuel:
-                pit_params["fuel"] = "A" # A,B,C,D
-            if need_tire < 5:
-                pit_params["tire"] = "A" # A,B,C
+            # if need_fuel:
+            #     pit_params["fuel"] = "A" # A,B,C,D
+            # if need_tire < 5:
+            #     pit_params["tire"] = "A" # A,B,C
+
             response = json.dumps(pit_params)
         else:
             response = json.dumps({"instruction":"continue"})
@@ -136,11 +142,14 @@ ws = websocket.WebSocketApp(url,
                             on_error = on_error,
                             on_close = on_close)
 
+# global variables
 graph = {}
+has_changed_tire = False
+
 ws.on_open = on_open
 ws.run_forever()
 
-cchelper.plot_lines([graph], 'fuel decrease', 'lap number', 'fuel')
+cchelper._plot_dist(graph, 'lap time vs tire', 'tire', 'lap time', True)
 cchelper.show()
 
 # loop attempt
