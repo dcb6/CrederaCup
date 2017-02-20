@@ -22,29 +22,16 @@ def on_message(ws, msg):
     print data
 
     # options:
-    retire_early = True
 
     # initialize global variables
+    global retire_early
     global graph
     global has_changed_tire
     global i
 
     ## FIRST RUN
     # initial weather
-    if "vehicleParams" in data:
-        # set vehicle parameters
-        vehicle_params = {"instruction": "setVehicleParams"}
-        vehicle_params["fuel"] = "A" # A,B,C,D
-        vehicle_params["tire"] = "A" # A,B,C
-        vehicle_params["spoilerAngle"] = i # [0.0, 10.0], default=5.0
-        vehicle_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
-        vehicle_params["airIntakeDiameter"] = 6.0 # [4.0, 8.0], default=6.0
-
-        print vehicle_params
-        response = json.dumps(vehicle_params)
-        # ws.send(response)
-
-    elif "weather" in data:
+    if "weather" in data:
         result = data["weather"]
         temp = result["temp"]
         is_raining = result["isRaining"]
@@ -118,7 +105,17 @@ def on_open(ws):
     response = json.dumps({"instruction": "getWeather"})
     ws.send(response)
     # get vehicle parameters
-    response = json.dumps({"instruction": "getVehicleParams"})
+    # response = json.dumps({"instruction": "getVehicleParams"})
+    # ws.send(response)
+    # set vehicle parameters
+    vehicle_params = {"instruction": "setVehicleParams"}
+    vehicle_params["fuel"] = "A" # A,B,C,D
+    vehicle_params["tire"] = "A" # A,B,C
+    vehicle_params["spoilerAngle"] = 5.0 # [0.0, 10.0], default=5.0
+    vehicle_params["camberAngle"] = 2.5 # [0.0, 5.0], default=2.5
+    vehicle_params["airIntakeDiameter"] = i # [4.0, 8.0], default=6.0
+
+    response = json.dumps(vehicle_params)
     ws.send(response)
     # get track parameters
     response = json.dumps({"instruction": "getTrackParams"})
@@ -130,11 +127,16 @@ def on_open(ws):
 
 ## OPTIONS
 race = "practice"
-loop_start = 0
-loop_end = 9
+retire_early = True
+loop_start = 4
+loop_end = 8
 loop_iter = 1
-x_title = 'spoiler angle'
+x_title = 'air intake diameter'
 y_title = 'lap time'
+
+# globals
+graph = {}
+
 
 # url being selected
 url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
@@ -147,6 +149,7 @@ url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
 url = url_options[race]
 
 for i in range(loop_start,loop_end + loop_iter,loop_iter):
+    print 'iterated value:', i
     if __name__ == "__main__":
         print "Attempting websocket connection to {}".format(url)
 
@@ -157,13 +160,14 @@ for i in range(loop_start,loop_end + loop_iter,loop_iter):
                             on_close = on_close)
 
         # global variables
-        graph = {}
         has_changed_tire = False
 
         ws.on_open = on_open
         ws.run_forever()
+        print 'trying to iterate'
 
-cchelper.plot_lines([graph], y_title + ' vs ' + x_title, 'tire', 'lap time')
+print 'graph:', graph
+cchelper.plot_lines([graph], y_title + ' vs ' + x_title, x_title, y_title)
 cchelper.show()
 
     # loop attempt
