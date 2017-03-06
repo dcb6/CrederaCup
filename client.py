@@ -146,7 +146,7 @@ url_options = {"practice":"wss://play.crederacup.com/season/I/practice",
                "italian":"wss://play.crederacup.com/season/I/race/ITALIANGRANDPRIX",
                "monaco":"wss://play.crederacup.com/season/I/race/MONACOGRANDPRIX"
                 }
-url = url_options[race]
+url = url_options['practice']
 
 for i in range(loop_start,loop_end + loop_iter,loop_iter):
     print 'iterated value:', i
@@ -167,8 +167,8 @@ for i in range(loop_start,loop_end + loop_iter,loop_iter):
         print 'trying to iterate'
 
 print 'graph:', graph
-cchelper.plot_lines([graph], y_title + ' vs ' + x_title, x_title, y_title)
-cchelper.show()
+# cchelper.plot_lines([graph], y_title + ' vs ' + x_title, x_title, y_title)
+# cchelper.show()
 
     # loop attempt
     # for i in range(1, 3, 1):
